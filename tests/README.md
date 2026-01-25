@@ -8,8 +8,8 @@ Since SteamOS is read-only, you'll run everything inside a Distrobox container.
 
 **First time setup:**
 ```bash
-# Create Ubuntu container (if not already created)
-distrobox create --name ubuntu --image ubuntu:22.04
+# Create Ubuntu container with input device access (if not already created)
+distrobox create --name ubuntu --image ubuntu:latest --additional-flags "--device=/dev/input"
 ```
 
 **Enter the container:**
@@ -18,6 +18,8 @@ distrobox enter ubuntu
 ```
 
 All commands in this guide should be run inside the Distrobox container.
+
+**Important:** The `--device=/dev/input` flag gives the container access to input devices, which is required for PTT detection and button injection.
 
 ## Prerequisites
 
@@ -72,6 +74,8 @@ python3 ~/voicepad/tests/01_mic_level.py
 python3 ~/voicepad/tests/02_vosk_print.py
 ```
 
+**Note:** This test auto-detects your mic's sample rate (likely 48kHz on Steam Deck) and resamples to 16kHz for Vosk.
+
 **✅ PASS:** Saying "mag" prints partial and final text  
 **❌ FAIL:** Mishears you → add aliases to `PHRASES`
 
@@ -81,21 +85,57 @@ python3 ~/voicepad/tests/02_vosk_print.py
 
 **Verifies:** PTT button/paddle is readable.
 
-### Step 3A: Find your PTT device
+### Step 3A: Configure Steam Input (Important!)
+
+**Before running evtest**, you need to map your back paddle to a keyboard key:
+
+1. Open Steam (Desktop Mode)
+2. Settings → Controller → Desktop Configuration
+3. Select your back paddle
+4. Choose **Keyboard**
+5. Select **F13**, **F14**, **F15** (or F12 if those aren't available)
+6. Apply and save
+
+**Why:** Steam Input intercepts controller buttons. Mapping to a keyboard key makes it visible to evdev.
+
+### Step 3B: Find your PTT device
+
+**Important:** Due to permission restrictions, run evtest on the **host SteamOS** (not inside Distrobox):
 
 ```bash
+# Exit Distrobox first
+exit
+
+# Run on SteamOS host
 sudo evtest
 ```
+Verify you see proper key events
 
-Press your PTT button and note:
-- Device path (e.g., `/dev/input/event4`)
-- Key name (e.g., `KEY_F20`)
+When you press your paddle, you should see:
+```
+Event: time ..., type 1 (EV_KEY), code 88 (KEY_F12), value 1
+Event: time ..., type 1 (EV_KEY), code 88 (KEY_F12), value 0
+```
 
-### Step 3B: Update and run test
+**✅ PASS:** Clean KEY_F12 events  
+**❌ FAIL:** Escape sequences like `^[[24~` → Steam Input still processing it, try different key
 
-Edit [03_ptt_read.py](03_ptt_read.py) with your device/key, then:
+### Step 3D: Update and run test
+
+Edit [03_ptt_read.py](03_ptt_read.py) with your device/key (likely `/dev/input/event6` and `KEY_F12`).
+
+**Note:** The Python scripts will work from inside Distrobox with the `--device=/dev/input` flag, even though evtest doesn't. Run test 03:
 
 ```bash
+# Re-enter Distrobox
+distrobox enter ubuntu
+
+# Run the test
+python3 ~/voicepad/tests/03_ptt_read.py
+```
+
+**✅ PASS:** Prints "PTT DOWN" / "PTT UP" immediately  
+**❌ FAIL:** Permission error → Python scripts need same host access as evtestev/input flag)
 python3 ~/voicepad/tests/03_ptt_read.py
 ```
 
@@ -170,8 +210,10 @@ Hold PTT and say "reload" or "mag".
 - Specify device explicitly: `sd.InputStream(device=0, ...)`
 
 ### PTT not detected
-- Try all `/dev/input/event*` devices in evtest
-- Check Steam Input isn't intercepting the button
+- **First**: Map paddle to F13/F14/F15 in Steam Input (Desktop Configuration)
+- Device should be `/dev/input/event6` (AT Translated Set 2 keyboard)
+- If you see escape sequences instead of KEY events, Steam Input is still processing it - try a different F-key
+- Test with `sudo evtest` on host first, then in Distrobox
 
 ### uinput permission denied
 ```bash
@@ -187,6 +229,11 @@ sudo usermod -a -G input $USER
 - Add phonetic variants to `PHRASES`: `["reload", "real load", "ree load"]`
 - Try a larger model
 - Use partial results (faster but less accurate)
+
+### Steam Input conflicts
+- If PTT doesn't work in-game later, also map the paddle in your **per-game controller configuration**
+- Desktop Mode and Gaming Mode have separate controller configs
+- Use F13-F15 (avoid F1-F12 which games might use)
 
 ---
 

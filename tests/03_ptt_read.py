@@ -1,7 +1,7 @@
 from evdev import InputDevice, ecodes
 
-DEVICE = "/dev/input/event4"  # TODO: Update with your device from evtest
-KEY = "KEY_F20"  # TODO: Update with your key from evtest
+DEVICE = "/dev/input/event6"  # Keyboard device
+KEY = "KEY_INSERT"  # Update with your mapped key
 dev = InputDevice(DEVICE)
 code = ecodes.ecodes[KEY]
 
