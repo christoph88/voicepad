@@ -24,9 +24,17 @@ All commands in this guide should be run inside the Distrobox container.
 ```bash
 # Install dependencies (inside Distrobox)
 sudo apt update
-sudo apt install -y python3-pip python3-pyaudio evtest
-pip3 install sounddevice numpy vosk python-evdev python-uinput
+sudo apt install -y python3-pip python3-pyaudio evtest python3-evdev
+
+# Install Python packages (use --break-system-packages since we're in a container)
+pip3 install --break-system-packages sounddevice numpy vosk
+
+# Install python-uinput (requires system dependencies first)
+sudo apt install -y libudev-dev python3-setuptools build-essential
+pip3 install --break-system-packages python-uinput
 ```
+
+**Note:** Using `--break-system-packages` is safe here since Distrobox containers are isolated from SteamOS.
 
 ---
 
