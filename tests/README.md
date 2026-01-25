@@ -36,6 +36,17 @@ pip3 install --break-system-packages python-uinput
 
 **Note:** Using `--break-system-packages` is safe here since Distrobox containers are isolated from SteamOS.
 
+### Download Vosk Model
+
+```bash
+cd ~/voicepad
+mkdir -p models
+cd models
+wget https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
+unzip vosk-model-small-en-us-0.15.zip
+rm vosk-model-small-en-us-0.15.zip
+```
+
 ---
 
 ## Test 1: Microphone Capture
