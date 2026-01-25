@@ -2,6 +2,23 @@
 
 Test each layer independently before integration. Run these **in order** on your Steam Deck (inside Distrobox Ubuntu).
 
+## Entering Distrobox
+
+Since SteamOS is read-only, you'll run everything inside a Distrobox container.
+
+**First time setup:**
+```bash
+# Create Ubuntu container (if not already created)
+distrobox create --name ubuntu --image ubuntu:22.04
+```
+
+**Enter the container:**
+```bash
+distrobox enter ubuntu
+```
+
+All commands in this guide should be run inside the Distrobox container.
+
 ## Prerequisites
 
 ```bash
