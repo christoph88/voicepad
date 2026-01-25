@@ -1,6 +1,10 @@
 # Vosk models (large files, download separately)
 models/
 
+# Planning and notes
+chatgpt-plan.md
+NEXT_STEPS.md
+
 # Python
 __pycache__/
 *.py[cod]
