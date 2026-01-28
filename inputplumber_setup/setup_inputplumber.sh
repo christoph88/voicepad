@@ -54,18 +54,56 @@ echo "✓ InputPlumber service is running"
 # Check for Steam Deck composite device
 echo
 echo "📋 Checking for Steam Deck device..."
+
+# Steam Deck config has auto_manage: false by default
+# We need to manually enable management
+echo "⚠ Steam Deck requires manual device management activation"
+echo
+
+# Find the Steam Deck config file
+STEAM_DECK_CONFIG="/usr/share/inputplumber/devices/50-steam_deck.yaml"
+
+if [ ! -f "$STEAM_DECK_CONFIG" ]; then
+    echo "✗ Steam Deck config not found at: $STEAM_DECK_CONFIG"
+    echo "InputPlumber may not have Steam Deck support installed."
+    exit 1
+fi
+
+echo "✓ Found Steam Deck config: $STEAM_DECK_CONFIG"
+
+# Create local config directory and copy with auto_manage enabled
+LOCAL_CONFIG_DIR="/home/deck/.config/inputplumber/devices"
+LOCAL_CONFIG="$LOCAL_CONFIG_DIR/50-steam_deck.yaml"
+
+mkdir -p "$LOCAL_CONFIG_DIR"
+
+# Copy config and enable auto_manage
+echo "🔧 Enabling auto_manage for Steam Deck..."
+sed 's/auto_manage: false/auto_manage: true/' "$STEAM_DECK_CONFIG" > "$LOCAL_CONFIG"
+
+# Restart InputPlumber to pick up config changes
+echo "🔄 Restarting InputPlumber to load config..."
+sudo systemctl restart inputplumber
+sleep 3
+
+# Check for devices again
 DEVICE_INFO=$(inputplumber devices list 2>&1 || echo "ERROR")
 
 if echo "$DEVICE_INFO" | grep -q "Steam Deck"; then
     echo "✓ Steam Deck device detected by InputPlumber"
     DEVICE_ID=0
 else
-    echo "⚠ Steam Deck device not auto-detected"
+    echo "✗ Still no Steam Deck device detected"
     echo
     echo "Device list:"
     echo "$DEVICE_INFO"
     echo
-    read -p "Enter composite device ID to use (usually 0): " DEVICE_ID
+    echo "Debug info:"
+    echo "  DMI Product: $(cat /sys/class/dmi/id/product_name 2>/dev/null || echo 'Unknown')"
+    echo "  DMI Vendor: $(cat /sys/class/dmi/id/sys_vendor 2>/dev/null || echo 'Unknown')"
+    echo
+    echo "Check logs: sudo journalctl -u inputplumber -n 50"
+    exit 1
 fi
 
 # Copy VoicePad profile to InputPlumber profiles directory

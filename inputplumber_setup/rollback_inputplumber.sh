@@ -28,6 +28,15 @@ if [ -f "$PROFILE_DEST" ]; then
     rm "$PROFILE_DEST"
 fi
 
+# Remove modified Steam Deck config (restores auto_manage: false)
+LOCAL_CONFIG="/home/deck/.config/inputplumber/devices/50-steam_deck.yaml"
+if [ -f "$LOCAL_CONFIG" ]; then
+    echo "🗑️  Removing modified Steam Deck config..."
+    rm "$LOCAL_CONFIG"
+    # Remove directory if empty
+    rmdir /home/deck/.config/inputplumber/devices 2>/dev/null || true
+fi
+
 # Restart Steam to restore normal controller handling
 echo "🔄 Restarting Steam to restore controller..."
 if pgrep -x "steam" > /dev/null; then
