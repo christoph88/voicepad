@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/ShadowBlip/InputPlumber/main/rootfs/usr/share/inputplumber/schema/device_profile_v1.json
+version: 1
+kind: DeviceProfile
+name: VoicePad PTT - Back Paddle R4
+description: Route back paddle R4 to DBus for voice command PTT
+
+# Map R4 back paddle to DBus target
+# Note: R4 when unmapped may not generate events, so we'll intercept ALL
+# events and filter for R4 in Python
+mapping: []
+
+# This profile enables intercept mode to route events to DBus
+# Your Python script will listen to DBus events and filter for R4
