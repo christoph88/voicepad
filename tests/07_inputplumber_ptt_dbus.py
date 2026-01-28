@@ -45,9 +45,18 @@ try:
     device_name = props_iface.Get('org.shadowblip.Input.CompositeDevice', 'Name')
     print(f"✓ Found device: {device_name}")
     
-    # Get the DBus target device path
-    # This is where intercepted events will be sent
-    dbus_target_path = '/org/shadowblip/InputPlumber/devices/target/dbus0'
+    # Get the DBus target device path from TargetDevices property
+    target_devices = props_iface.Get('org.shadowblip.Input.CompositeDevice', 'TargetDevices')
+    dbus_target_path = None
+    for target in target_devices:
+        if 'dbus' in target:
+            dbus_target_path = target
+            break
+    
+    if not dbus_target_path:
+        print("✗ No DBus target device found!")
+        print(f"Available targets: {target_devices}")
+        exit(1)
     
     print(f"\nListening for DBus events on: {dbus_target_path}")
     print("Press back paddle R4 (unmapped) to test PTT")
