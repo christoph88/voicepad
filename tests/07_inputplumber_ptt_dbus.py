@@ -47,7 +47,7 @@ try:
     
     # Get the DBus target device path
     # This is where intercepted events will be sent
-    dbus_target_path = device_path + '/target/dbus0'
+    dbus_target_path = '/org/shadowblip/InputPlumber/devices/target/dbus0'
     
     print(f"\nListening for DBus events on: {dbus_target_path}")
     print("Press back paddle R4 (unmapped) to test PTT")
